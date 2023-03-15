@@ -22,3 +22,4 @@ CTFd is a Capture The Flag framework focusing on ease of use and customizability
 * Change `FLASK_ENV` to `production` in [.flaskenv](./.flaskenv)
 * Remove expose port for `ctfd` container in docker compose
 * Setup nginx for SSL (TODO: Upload example config)
+* Optional but strongly recommended: **CHANGE DATABASE CREDENTIALS!**
