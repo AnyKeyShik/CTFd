@@ -461,6 +461,7 @@ class Challenge(Resource):
         if response.errors:
             return {"success": False, "errors": response.errors}, 400
 
+        print(data)
         challenge = Challenges.query.filter_by(id=challenge_id).first_or_404()
         challenge_class = get_chal_class(challenge.type)
         challenge = challenge_class.update(challenge, request)

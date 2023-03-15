@@ -46,7 +46,7 @@ def test_standings():
         standings = get_standings()
 
         assert standings[0].name == "team2"
-        assert standings[0].score == 100
+        assert standings[0].total_score == 100
 
     destroy_ctfd(app)
 
@@ -74,7 +74,7 @@ def test_admin_standings():
         standings = get_standings(admin=True)
 
         assert standings[0].name == "team1"
-        assert standings[0].score == 100
+        assert standings[0].total_score == 100
 
 
 def test_admin_team_standings():

@@ -33,7 +33,7 @@ class ScoresDistribution(Resource):
         count = 1
         brackets = defaultdict(lambda: 0)
         for t in reversed(standings):
-            if ((t.score >= bottom) and (t.score <= top)) or t.score <= 0:
+            if ((t.rating_score >= bottom) and (t.rating_score <= top)) or t.rating_score <= 0:
                 brackets[top] += 1
             else:
                 count += 1

@@ -14,6 +14,7 @@ from CTFd.plugins import register_plugin_assets_directory
 from CTFd.plugins.flags import FlagException, get_flag_class
 from CTFd.utils.uploads import delete_file
 from CTFd.utils.user import get_ip
+from datetime import datetime
 
 
 class BaseChallenge(object):
@@ -59,6 +60,8 @@ class BaseChallenge(object):
             "state": challenge.state,
             "max_attempts": challenge.max_attempts,
             "type": challenge.type,
+            "expiration": challenge.expiration_date,
+
             "type_data": {
                 "id": cls.id,
                 "name": cls.name,
@@ -80,7 +83,14 @@ class BaseChallenge(object):
         """
         data = request.form or request.get_json()
         for attr, value in data.items():
+            if attr == "exp-date":
+                attr = "expiration"
+                if not value:
+                    challenge.expiration = None
+                    continue
+                value = datetime.strptime(value, '%Y-%m-%d')
             setattr(challenge, attr, value)
+        print(challenge.expiration)
 
         db.session.commit()
         return challenge

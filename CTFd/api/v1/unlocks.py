@@ -109,7 +109,7 @@ class UnlockList(Resource):
 
         # We should use the team's score if in teams mode
         # user.account gives the appropriate account based on team mode
-        if target.cost > user.account.score:
+        if target.cost > user.account.rating_score:
             return (
                 {
                     "success": False,

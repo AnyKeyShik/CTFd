@@ -28,6 +28,7 @@ def test_scoreboard_team_score():
             flag = {"challenge_id": 1, "submission": "flag"}
             client.post("/api/v1/challenges/attempt", json=flag)
         standings = get_standings()
-        assert standings[0][2] == "team_name"
-        assert standings[0][3] == 100
+        print(standings)
+        assert standings[0][1] == "team_name"
+        assert standings[0][2] == 100
     destroy_ctfd(app)

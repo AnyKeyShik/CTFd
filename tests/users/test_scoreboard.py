@@ -3,6 +3,8 @@
 
 from freezegun import freeze_time
 
+from datetime import datetime
+
 from CTFd.models import Users
 from tests.helpers import (
     create_ctfd,
@@ -57,7 +59,7 @@ def test_user_score_is_correct():
         user1 = Users.query.filter_by(id=2).first()
 
         # assert that user1's score is 100
-        assert user1.score == 100
+        assert user1.total_score == 100
         assert user1.place == "1st"
 
         # create user2
@@ -68,14 +70,14 @@ def test_user_score_is_correct():
 
         # assert that user2's score is 100 but is in 2nd place
         user2 = Users.query.filter_by(id=3).first()
-        assert user2.score == 100
+        assert user2.total_score == 100
         assert user2.place == "2nd"
 
         # create an award for user2
         gen_award(app.db, user_id=3, value=5)
 
         # assert that user2's score is now 105 and is in 1st place
-        assert user2.score == 105
+        assert user2.total_score == 105
         assert user2.place == "1st"
     destroy_ctfd(app)
 
@@ -151,6 +153,44 @@ def test_top_10():
         }
         assert saved == response
     destroy_ctfd(app)
+
+
+def test_outdated_task():
+    app = create_ctfd()
+    with app.app_context():
+        admin = login_as_user(app, name="admin", password="password")
+
+        register_user(
+            app, name="user1", email="user1@examplectf.com", password="password"
+        )
+        client1 = login_as_user(app, name="user1", password="password")
+
+        datetime_str = '09/19/02 13:55:26'
+        datetime_object = datetime.strptime(datetime_str, '%m/%d/%y %H:%M:%S')
+        chal1 = gen_challenge(app.db, expiration=datetime_object, value=50)
+        gen_flag(app.db, challenge_id=chal1.id, content="flag")
+        chal1_id = chal1.id
+
+        chal2 = gen_challenge(app.db, value=50)
+        gen_flag(app.db, challenge_id=chal2.id, content="flag")
+        chal2_id = chal2.id
+
+        # user1 solves chal1
+        with freeze_time("2017-10-3 03:21:34"):
+            with client1.session_transaction():
+                data = {"submission": "flag", "challenge_id": chal1_id}
+                client1.post("/api/v1/challenges/attempt", json=data)
+
+        # user1 solves chal2
+        with freeze_time("2017-10-3 03:21:34"):
+            with client1.session_transaction():
+                data = {"submission": "flag", "challenge_id": chal2_id}
+                client1.post("/api/v1/challenges/attempt", json=data)
+
+        scores = get_scores(admin)
+        print(scores)
+        assert scores[0]["total_score"] == 100
+        assert scores[0]["rating_score"] == 50
 
 
 def test_scoring_logic():
@@ -235,10 +275,12 @@ def test_scoring_logic_with_zero_point_challenges():
         gen_flag(app.db, challenge_id=chal2.id, content="flag")
         chal2_id = chal2.id
 
-        # A 0 point challenge shouldn't influence the scoreboard (see #577)
-        chal0 = gen_challenge(app.db, value=0)
-        gen_flag(app.db, challenge_id=chal0.id, content="flag")
-        chal0_id = chal0.id
+        # A outdated challenge shouldn't influence the scoreboard
+        datetime_str = '09/19/02 13:55:26'
+        datetime_object = datetime.strptime(datetime_str, '%m/%d/%y %H:%M:%S')
+        chal_out = gen_challenge(app.db, value=100, expiration=datetime_object)
+        gen_flag(app.db, challenge_id=chal_out.id, content="flag")
+        chal_out_id = chal_out.id
 
         # user1 solves chal1
         with freeze_time("2017-10-3 03:21:34"):
@@ -274,13 +316,13 @@ def test_scoring_logic_with_zero_point_challenges():
         scores = get_scores(admin)
         assert scores[0]["name"] == "user2"
 
-        # user2 solves a 0 point challenge
+        # user1 solves a outdated challenge
         with freeze_time("2017-10-5 03:55:34"):
-            with client2.session_transaction():
-                data = {"submission": "flag", "challenge_id": chal0_id}
-                client2.post("/api/v1/challenges/attempt", json=data)
+            with client1.session_transaction():
+                data = {"submission": "flag", "challenge_id": chal_out_id}
+                client1.post("/api/v1/challenges/attempt", json=data)
 
-        # user2 should still be on top because 0 point challenges should not tie break
+        # user2 should still be on top because outdated challenges should not tie break
         scores = get_scores(admin)
         assert scores[0]["name"] == "user2"
     destroy_ctfd(app)

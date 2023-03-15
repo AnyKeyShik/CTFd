@@ -199,7 +199,8 @@ class UserPublic(Resource):
             return {"success": False, "errors": response.errors}, 400
 
         response.data["place"] = user.place
-        response.data["score"] = user.score
+        response.data["rating_score"] = user.rating_score
+        response.data["total_score"] = user.total_score
 
         return {"success": True, "data": response.data}
 
@@ -294,7 +295,8 @@ class UserPrivate(Resource):
         user = get_current_user()
         response = UserSchema("self").dump(user).data
         response["place"] = user.place
-        response["score"] = user.score
+        response["rating_score"] = user.rating_score
+        response["total_score"] = user.total_score
         return {"success": True, "data": response}
 
     @authed_only

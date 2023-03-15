@@ -180,7 +180,8 @@ $(() => {
     });
   });
 
-  $("#challenge-update-container > form").submit(function(event) {
+  $("#challenge-update-container > form").submit(function (event) {
+    console.log(event.target);
     event.preventDefault();
     const params = $(event.target).serializeJSON(true);
 

@@ -52,22 +52,6 @@
 	</div>
 </div>
 
-<div id="user-email-modal" class="modal fade">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h2 class="modal-action text-center w-100">Email User</h2>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">&times;</span>
-				</button>
-			</div>
-			<div class="modal-body clearfix">
-				{% include "admin/modals/mail/send.html" %}
-			</div>
-		</div>
-	</div>
-</div>
-
 <div id="user-addresses-modal" class="modal fade">
 	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
@@ -145,9 +129,15 @@
 			{% endif %}
 		</h3>
 		<h3 id="team-score" class="text-center">
-			{% if score %}
-				{{ score }}
-				<small>points</small>
+			{% if rating_score %}
+				{{ rating_score }}
+				<small>rating points</small>
+			{% endif %}
+		</h3>
+		<h3 id="team-score" class="text-center text-muted">
+			{% if total_score %}
+				{{ total_score }}
+				<small>total points</small>
 			{% endif %}
 		</h3>
 		<hr class="w-50">
@@ -161,23 +151,13 @@
 			<a class="award-user text-dark">
 				<i class="btn-fa fas fa-trophy fa-2x px-2" data-toggle="tooltip" data-placement="top" title="Award User"></i>
 			</a>
-			<a class="email-user text-dark">
-				<i class="btn-fa fas fa-envelope fa-2x px-2" data-toggle="tooltip" data-placement="top" title="Email User"></i>
+			<a class="addresses-user text-dark">
+				<i class="btn-fa fas fa-network-wired fa-2x px-2" data-toggle="tooltip" data-placement="top"
+					title="IP Addresses"></i>
 			</a>
 			<a class="delete-user text-dark">
 				<i class="btn-fa fas fa-trash-alt fa-2x px-2" data-toggle="tooltip" data-placement="top" title="Delete User"></i>
 			</a>
-		</div>
-		<div class="pt-3">
-			<a class="addresses-user text-dark">
-				<i class="btn-fa fas fa-network-wired fa-2x px-2" data-toggle="tooltip" data-placement="top" title="IP Addresses"></i>
-			</a>
-			{% if user.website %}
-			<a href="{{ user.website }}" target="_blank" class="text-decoration-none text-dark" rel="noopener">
-				<i class="btn-fa fas fa-external-link-alt fa-2x px-2" data-toggle="tooltip" data-placement="top"
-					title="{{ user.website }}" aria-hidden="true"></i>
-			</a>
-			{% endif %}
 		</div>
 	</div>
 </div>

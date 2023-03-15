@@ -89,9 +89,9 @@ def test_scoreboard_tie_break_ordering_with_awards():
             resp = r.get_json()
             assert len(resp["data"]) == 2
             assert resp["data"][0]["name"] == "user2"
-            assert resp["data"][0]["score"] == 200
+            assert resp["data"][0]["total_score"] == 200
             assert resp["data"][1]["name"] == "user1"
-            assert resp["data"][1]["score"] == 100
+            assert resp["data"][1]["total_score"] == 100
 
         # Give user1 an award for 100 points.
         # At this point user2 should still be ahead
@@ -102,9 +102,9 @@ def test_scoreboard_tie_break_ordering_with_awards():
             resp = r.get_json()
             assert len(resp["data"]) == 2
             assert resp["data"][0]["name"] == "user2"
-            assert resp["data"][0]["score"] == 200
+            assert resp["data"][0]["total_score"] == 200
             assert resp["data"][1]["name"] == "user1"
-            assert resp["data"][1]["score"] == 200
+            assert resp["data"][1]["total_score"] == 200
     destroy_ctfd(app)
 
 
@@ -135,9 +135,9 @@ def test_scoreboard_tie_break_ordering_with_awards_under_teams():
             print(resp)
             assert len(resp["data"]) == 2
             assert resp["data"][0]["name"] == "team2"
-            assert resp["data"][0]["score"] == 200
+            assert resp["data"][0]["total_score"] == 200
             assert resp["data"][1]["name"] == "team1"
-            assert resp["data"][1]["score"] == 100
+            assert resp["data"][1]["total_score"] == 100
 
         # Give a user on the team an award for 100 points.
         # At this point team2 should still be ahead
@@ -149,7 +149,7 @@ def test_scoreboard_tie_break_ordering_with_awards_under_teams():
             print(resp)
             assert len(resp["data"]) == 2
             assert resp["data"][0]["name"] == "team2"
-            assert resp["data"][0]["score"] == 200
+            assert resp["data"][0]["total_score"] == 200
             assert resp["data"][1]["name"] == "team1"
-            assert resp["data"][1]["score"] == 200
+            assert resp["data"][1]["total_score"] == 200
     destroy_ctfd(app)

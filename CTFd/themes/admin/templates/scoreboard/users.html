@@ -8,7 +8,8 @@
 			</th>
 			<th class="sort-col text-center"><b>Place</b></th>
 			<th class="sort-col"><b>User</b></th>
-			<th class="sort-col"><b>Score</b></th>
+			<th class="sort-col"><b>Rating score</b></th>
+			<th class="sort-col"><b>Total score</b></th>
 			<th class="sort-col"><b>Visibility</b></th>
 		</tr>
 	</thead>
@@ -37,7 +38,8 @@
 					{% endif %}
 				</a>
 			</td>
-			<td>{{ standing.score }}</td>
+			<td>{{ standing.rating_score }}123</td>
+			<td>{{ standing.total_score }}</td>
 			<td>
 				{% if standing.hidden %}
 					<span class="badge badge-danger">hidden</span>

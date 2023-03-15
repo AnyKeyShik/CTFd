@@ -1,4 +1,6 @@
 from sqlalchemy.sql.expression import union_all
+from sqlalchemy import or_
+import sqlalchemy as sa
 
 from CTFd.cache import cache
 from CTFd.models import Awards, Challenges, Solves, Teams, Users, db
@@ -21,7 +23,19 @@ def get_standings(count=None, admin=False, fields=None):
         fields = []
     Model = get_model()
 
-    scores = (
+    rating_scores = (
+        db.session.query(
+            Solves.account_id.label("account_id"),
+            db.func.sum(Challenges.value).label("score"),
+            db.func.max(Solves.id).label("id"),
+            db.func.max(Solves.date).label("date"),
+        )
+        .join(Challenges)
+        .filter(or_(Solves.date < Challenges.expiration, Challenges.expiration == sa.null()))
+        .group_by(Solves.account_id)
+    )
+
+    total_scores = (
         db.session.query(
             Solves.account_id.label("account_id"),
             db.func.sum(Challenges.value).label("score"),
@@ -49,25 +63,38 @@ def get_standings(count=None, admin=False, fields=None):
     """
     freeze = get_config("freeze")
     if not admin and freeze:
-        scores = scores.filter(Solves.date < unix_time_to_utc(freeze))
+        rating_scores = rating_scores.filter(Solves.date < unix_time_to_utc(freeze))
+        total_scores = total_scores.filter(Awards.date < unix_time_to_utc(freeze))
         awards = awards.filter(Awards.date < unix_time_to_utc(freeze))
 
     """
     Combine awards and solves with a union. They should have the same amount of columns
     """
-    results = union_all(scores, awards).alias("results")
+    rating_results = union_all(rating_scores, awards).alias("results")
+    total_results = union_all(total_scores, awards).alias("results")
 
     """
     Sum each of the results by the team id to get their score.
     """
-    sumscores = (
+    rating_sumscores = (
         db.session.query(
-            results.columns.account_id,
-            db.func.sum(results.columns.score).label("score"),
-            db.func.max(results.columns.id).label("id"),
-            db.func.max(results.columns.date).label("date"),
+            rating_results.columns.account_id,
+            db.func.sum(rating_results.columns.score).label("rating_score"),
+            db.func.max(rating_results.columns.id).label("id"),
+            db.func.max(rating_results.columns.date).label("date"),
         )
-        .group_by(results.columns.account_id)
+        .group_by(rating_results.columns.account_id)
+        .subquery()
+    )
+
+    total_sumscores = (
+        db.session.query(
+            total_results.columns.account_id,
+            db.func.sum(total_results.columns.score).label("total_score"),
+            db.func.max(total_results.columns.id).label("id"),
+            db.func.max(total_results.columns.date).label("date"),
+        )
+        .group_by(total_results.columns.account_id)
         .subquery()
     )
 
@@ -83,35 +110,39 @@ def get_standings(count=None, admin=False, fields=None):
         standings_query = (
             db.session.query(
                 Model.id.label("account_id"),
-                Model.oauth_id.label("oauth_id"),
+                #Model.oauth_id.label("oauth_id"),
                 Model.name.label("name"),
                 Model.hidden,
                 Model.banned,
-                sumscores.columns.score,
+                rating_sumscores.columns.rating_score,
+                total_sumscores.columns.total_score,
                 *fields,
             )
-            .join(sumscores, Model.id == sumscores.columns.account_id)
+            .join(rating_sumscores, Model.id == rating_sumscores.columns.account_id)
+            .join(total_sumscores, Model.id == total_sumscores.columns.account_id)
             .order_by(
-                sumscores.columns.score.desc(),
-                sumscores.columns.date.asc(),
-                sumscores.columns.id.asc(),
+                rating_sumscores.columns.rating_score.desc(),
+                rating_sumscores.columns.date.asc(),
+                rating_sumscores.columns.id.asc(),
             )
         )
     else:
         standings_query = (
             db.session.query(
                 Model.id.label("account_id"),
-                Model.oauth_id.label("oauth_id"),
+                #Model.oauth_id.label("oauth_id"),
                 Model.name.label("name"),
-                sumscores.columns.score,
+                rating_sumscores.columns.rating_score,
+                total_sumscores.columns.total_score,
                 *fields,
             )
-            .join(sumscores, Model.id == sumscores.columns.account_id)
+            .join(rating_sumscores, Model.id == rating_sumscores.columns.account_id)
+            .join(total_sumscores, Model.id == total_sumscores.columns.account_id)
             .filter(Model.banned == False, Model.hidden == False)
             .order_by(
-                sumscores.columns.score.desc(),
-                sumscores.columns.date.asc(),
-                sumscores.columns.id.asc(),
+                rating_sumscores.columns.rating_score.desc(),
+                rating_sumscores.columns.date.asc(),
+                rating_sumscores.columns.id.asc(),
             )
         )
 
@@ -220,7 +251,19 @@ def get_team_standings(count=None, admin=False, fields=None):
 def get_user_standings(count=None, admin=False, fields=None):
     if fields is None:
         fields = []
-    scores = (
+    rating_scores = (
+        db.session.query(
+            Solves.user_id.label("user_id"),
+            db.func.sum(Challenges.value).label("score"),
+            db.func.max(Solves.id).label("id"),
+            db.func.max(Solves.date).label("date"),
+        )
+        .join(Challenges)
+        .filter(or_(Solves.date < Challenges.expiration, Challenges.expiration == sa.null()))
+        .group_by(Solves.user_id)
+    )
+
+    total_scores = (
         db.session.query(
             Solves.user_id.label("user_id"),
             db.func.sum(Challenges.value).label("score"),
@@ -245,19 +288,32 @@ def get_user_standings(count=None, admin=False, fields=None):
 
     freeze = get_config("freeze")
     if not admin and freeze:
-        scores = scores.filter(Solves.date < unix_time_to_utc(freeze))
+        rating_scores = rating_scores.filter(Solves.date < unix_time_to_utc(freeze))
+        total_scores = total_scores.filter(Solves.date < unix_time_to_utc(freeze))
         awards = awards.filter(Awards.date < unix_time_to_utc(freeze))
 
-    results = union_all(scores, awards).alias("results")
+    rating_results = union_all(rating_scores, awards).alias("results")
+    total_results = union_all(total_scores, awards).alias("results")
 
-    sumscores = (
+    rating_sumscores = (
         db.session.query(
-            results.columns.user_id,
-            db.func.sum(results.columns.score).label("score"),
-            db.func.max(results.columns.id).label("id"),
-            db.func.max(results.columns.date).label("date"),
+            rating_results.columns.user_id,
+            db.func.sum(rating_results.columns.score).label("rating_score"),
+            db.func.max(rating_results.columns.id).label("id"),
+            db.func.max(rating_results.columns.date).label("date"),
         )
-        .group_by(results.columns.user_id)
+        .group_by(rating_results.columns.user_id)
+        .subquery()
+    )
+
+    total_sumscores = (
+        db.session.query(
+            total_results.columns.user_id,
+            db.func.sum(total_results.columns.score).label("total_score"),
+            db.func.max(total_results.columns.id).label("id"),
+            db.func.max(total_results.columns.date).label("date"),
+        )
+        .group_by(total_results.columns.user_id)
         .subquery()
     )
 
@@ -265,37 +321,41 @@ def get_user_standings(count=None, admin=False, fields=None):
         standings_query = (
             db.session.query(
                 Users.id.label("user_id"),
-                Users.oauth_id.label("oauth_id"),
+                #Users.oauth_id.label("oauth_id"),
                 Users.name.label("name"),
                 Users.team_id.label("team_id"),
                 Users.hidden,
                 Users.banned,
-                sumscores.columns.score,
+                rating_sumscores.columns.rating_score,
+                total_sumscores.columns.total_score,
                 *fields,
             )
-            .join(sumscores, Users.id == sumscores.columns.user_id)
+            .join(rating_sumscores, Users.id == rating_sumscores.columns.user_id)
+            .join(total_sumscores, Users.id == total_sumscores.columns.user_id)
             .order_by(
-                sumscores.columns.score.desc(),
-                sumscores.columns.date.asc(),
-                sumscores.columns.id.asc(),
+                rating_sumscores.columns.rating_score.desc(),
+                rating_sumscores.columns.date.asc(),
+                rating_sumscores.columns.id.asc(),
             )
         )
     else:
         standings_query = (
             db.session.query(
                 Users.id.label("user_id"),
-                Users.oauth_id.label("oauth_id"),
+                #Users.oauth_id.label("oauth_id"),
                 Users.name.label("name"),
                 Users.team_id.label("team_id"),
-                sumscores.columns.score,
+                rating_sumscores.columns.rating_score,
+                total_sumscores.columns.total_score,
                 *fields,
             )
-            .join(sumscores, Users.id == sumscores.columns.user_id)
+            .join(rating_sumscores, Users.id == rating_sumscores.columns.user_id)
+            .join(total_sumscores, Users.id == total_sumscores.columns.user_id)
             .filter(Users.banned == False, Users.hidden == False)
             .order_by(
-                sumscores.columns.score.desc(),
-                sumscores.columns.date.asc(),
-                sumscores.columns.id.asc(),
+                rating_sumscores.columns.rating_score.desc(),
+                rating_sumscores.columns.date.asc(),
+                rating_sumscores.columns.id.asc(),
             )
         )
 

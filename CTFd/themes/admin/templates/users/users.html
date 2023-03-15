@@ -75,10 +75,8 @@
 						</th>
 						<th class="sort-col text-center"><b>ID</b></th>
 						<th class="sort-col text-center"><b>User</b></th>
-						<th class="sort-col text-center"><b>Email</b></th>
-						<th class="sort-col text-center"><b>Country</b></th>
+						<th class="sort-col text-center"><b>E-mail</b></th>
 						<th class="sort-col text-center px-0"><b>Admin</b></th>
-						<th class="sort-col text-center px-0"><b>Verified</b></th>
 						<th class="sort-col text-center px-0"><b>Hidden</b></th>
 						<th class="sort-col text-center px-0"><b>Banned</b></th>
 					</tr>
@@ -116,22 +114,9 @@
 								<a href="mailto:{{ user.email }}" target="_blank">{{ user.email | truncate(32) }}</a>
 							{% endif %}
 						</td>
-						<td class="team-country text-center" value="{{ user.country if user.country is not none }}">
-							<span>
-								{% if user.country %}
-									<i class="flag-{{ user.country.lower() }}"></i>
-									<small>{{ lookup_country_code(user.country) }}</small>
-								{% endif %}
-							</span>
-						</td>
 						<td class="team-admin d-md-table-cell d-lg-table-cell text-center" value="{{ user.type }}">
 							{% if user.type == 'admin' %}
 								<span class="badge badge-primary">admin</span>
-							{% endif %}
-						</td>
-						<td class="team-verified d-md-table-cell d-lg-table-cell text-center" value="{{ user.verified }}">
-							{% if user.verified %}
-								<span class="badge badge-success">verified</span>
 							{% endif %}
 						</td>
 						<td class="team-hidden d-md-table-cell d-lg-table-cell text-center" value="{{ user.hidden }}">

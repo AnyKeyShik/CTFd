@@ -323,6 +323,7 @@ def gen_challenge(
     category="chal_category",
     type="standard",
     state="visible",
+    expiration=None,
     **kwargs
 ):
     chal = Challenges(
@@ -332,6 +333,7 @@ def gen_challenge(
         category=category,
         type=type,
         state=state,
+        expiration=expiration,
         **kwargs
     )
     db.session.add(chal)

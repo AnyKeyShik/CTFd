@@ -82,25 +82,7 @@
 				<option value="private" {% if registration_visibility == 'private' %}selected{% endif %}>
 					Private
 				</option>
-				<option value="mlc" {% if registration_visibility == 'mlc' %}selected{% endif %}>
-					MajorLeagueCyber Only
-				</option>
 			</select>
-		</div>
-
-		<div class="form-group">
-			<label>
-				Pause<br>
-				<small class="form-text text-muted">
-					Prevent users from submitting answers until unpaused. Challenges can still be viewed.
-				</small>
-			</label>
-			<div class="form-check pl-0">
-				<label>
-					<input id="paused" name="paused" type="checkbox" {% if paused %}checked{% endif %}>
-					Pause CTF<br>
-				</label>
-			</div>
 		</div>
 
 		<button type="submit" class="btn btn-md btn-primary float-right">Update</button>

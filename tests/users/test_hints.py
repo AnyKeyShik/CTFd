@@ -62,7 +62,7 @@ def test_user_can_unlock_hint():
             client = login_as_user(app, name="user1", password="password")
 
             user = Users.query.filter_by(name="user1").first()
-            assert user.score == 15
+            assert user.rating_score == 15
 
             with client.session_transaction():
                 r = client.get("/api/v1/hints/{}".format(hint_id))
@@ -80,7 +80,7 @@ def test_user_can_unlock_hint():
                 assert resp["data"].get("content") == "This is a hint"
 
                 user = Users.query.filter_by(name="user1").first()
-                assert user.score == 5
+                assert user.rating_score == 5
     destroy_ctfd(app)
 
 
@@ -119,7 +119,7 @@ def test_unlocking_hints_with_cost_during_ctf_with_points():
         assert r.get_json()["data"].get("content") == "This is a hint"
 
         user = Users.query.filter_by(id=2).first()
-        assert user.score == 90
+        assert user.total_score == 90
     destroy_ctfd(app)
 
 
@@ -147,7 +147,7 @@ def test_unlocking_hints_with_cost_during_ctf_without_points():
         assert r.get_json()["data"].get("content") is None
 
         user = Users.query.filter_by(id=2).first()
-        assert user.score == 0
+        assert user.total_score == 0
     destroy_ctfd(app)
 
 
@@ -185,7 +185,7 @@ def test_unlocking_hints_with_cost_before_ctf():
 
             user = Users.query.filter_by(id=2).first()
 
-            assert user.score == 100
+            assert user.rating_score == 100
             assert Unlocks.query.count() == 0
     destroy_ctfd(app)
 
@@ -222,7 +222,7 @@ def test_unlocking_hints_with_cost_during_ended_ctf():
             assert r.status_code == 403
 
             user = Users.query.filter_by(id=2).first()
-            assert user.score == 100
+            assert user.rating_score == 100
             assert Unlocks.query.count() == 0
     destroy_ctfd(app)
 
@@ -254,7 +254,7 @@ def test_unlocking_hints_with_cost_during_frozen_ctf():
             assert resp.get("content") == "This is a hint"
 
             user = Users.query.filter_by(id=2).first()
-            assert user.score == 100
+            assert user.total_score == 100
     destroy_ctfd(app)
 
 

@@ -39,6 +39,31 @@
 	</div>
 	{% endblock %}
 
+	{% block expiration %}
+	<div class="form-group">
+		<label>
+			Expiration date<br>
+			<small class="form-text text-muted">
+				When challenge stop to bring points.
+			</small>
+		</label>
+		<div class="row" id="start-date">
+			<div class="form-group col-md-2">
+				<label for="start-day"><small class="form-text text-muted">Day:</small></label>
+				<input class="form-control start-date" id='start-day' min="0" max="31" type='number'>
+			</div>
+			<div class="form-group col-md-2">
+				<label for="start-month"><small class="form-text text-muted">Month:</small></label>
+				<input class="form-control start-date" id='start-month' min="0" max="12" type='number'>
+			</div>
+			<div class="form-group col-md-3">
+				<label for="start-year"><small class="form-text text-muted">Year:</small></label>
+				<input class="form-control start-date" id='start-year' type='number'>
+			</div>
+		</div>
+	</div>
+	{% endblock %}
+
 	{% block value %}
 	<div class="form-group">
 		<label>

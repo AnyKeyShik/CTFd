@@ -24,7 +24,8 @@
 					<tr>
 						<td scope="col" width="10px"><b>Place</b></td>
 						<td scope="col"><b>{{ get_mode_as_word(capitalize=True) }}</b></td>
-						<td scope="col"><b>Score</b></td>
+						<td scope="col"><b>Rating score</b></td>
+						<td scope="col"><b>Total score</b></td>
 					</tr>
 				</thead>
 				<tbody>
@@ -48,7 +49,8 @@
 								{% endif %}
 							</a>
 						</td>
-						<td>{{ standing.score }}</td>
+						<td>{{ standing.rating_score }}</td>
+						<td>{{ standing.total_score }}</td>
 					</tr>
 				{% endfor %}
 				</tbody>

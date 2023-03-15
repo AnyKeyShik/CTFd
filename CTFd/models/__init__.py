@@ -6,6 +6,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property, validates
+from sqlalchemy import or_
+import sqlalchemy as sa
 
 from CTFd.cache import cache
 
@@ -104,6 +106,7 @@ class Challenges(db.Model):
     type = db.Column(db.String(80))
     state = db.Column(db.String(80), nullable=False, default="visible")
     requirements = db.Column(db.JSON)
+    expiration = db.Column(db.DateTime)
 
     files = db.relationship("ChallengeFiles", backref="challenge")
     tags = db.relationship("Tags", backref="challenge")
@@ -128,6 +131,17 @@ class Challenges(db.Model):
         "polymorphic_on": type,
         "_polymorphic_map": alt_defaultdict(),
     }
+
+    @property
+    def expiration_date(self):
+        if self.expiration:
+            date_arr = str(self.expiration)[:10].split("-")
+            return "/".join(date_arr[::-1])
+        
+    @property
+    def expiration_date_str(self):
+        if self.expiration:
+            return str(self.expiration)[:10]
 
     @property
     def html(self):
@@ -394,7 +408,11 @@ class Users(db.Model):
         return self.get_awards(admin=False)
 
     @property
-    def score(self):
+    def rating_score(self):
+        return self.get_score(admin=False, rating=True)
+    
+    @property
+    def total_score(self):
         return self.get_score(admin=False)
 
     @property
@@ -461,14 +479,24 @@ class Users(db.Model):
         return awards.all()
 
     @cache.memoize()
-    def get_score(self, admin=False):
+    def get_score(self, admin=False, rating=False):
         score = db.func.sum(Challenges.value).label("score")
-        user = (
-            db.session.query(Solves.user_id, score)
-            .join(Users, Solves.user_id == Users.id)
-            .join(Challenges, Solves.challenge_id == Challenges.id)
-            .filter(Users.id == self.id)
-        )
+
+        if rating:
+            user = (
+                db.session.query(Solves.user_id, score)
+                .join(Users, Solves.user_id == Users.id)
+                .join(Challenges, Solves.challenge_id == Challenges.id)
+                .filter(or_(Solves.date < Challenges.expiration, Challenges.expiration == sa.null()))
+                .filter(Users.id == self.id)
+            )
+        else:
+            user = (
+                db.session.query(Solves.user_id, score)
+                .join(Users, Solves.user_id == Users.id)
+                .join(Challenges, Solves.challenge_id == Challenges.id)
+                .filter(Users.id == self.id)
+            )
 
         award_score = db.func.sum(Awards.value).label("award_score")
         award = db.session.query(award_score).filter_by(user_id=self.id)
@@ -582,6 +610,14 @@ class Teams(db.Model):
 
     @property
     def score(self):
+        return self.get_score(admin=False)
+    
+    @property
+    def total_score(self):
+        return self.get_score(admin=False)
+    
+    @property
+    def rating_score(self):
         return self.get_score(admin=False)
 
     @property

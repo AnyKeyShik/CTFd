@@ -53,8 +53,11 @@
 				</h2>
 				<h2 class="text-center">
 					{% if account.place %}
-						{{ account.score }} <small>points</small>
+					{{ account.rating_score }} <small>rating points</small>
 					{% endif %}
+				</h2>
+				<h2 class="text-center text-muted">
+					{{ account.total_score }} <small>total points</small>
 				</h2>
 			</div>
 

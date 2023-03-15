@@ -38,6 +38,10 @@
 
 						<span class="challenge-desc">{% block description %}{{ challenge.html }}{% endblock %}</span>
 
+						{% if challenge.expiration_date %}
+							<span class="challenge-desc"><i>Expiration at {{ challenge.expiration_date }}</i></span>
+						{% endif %}
+
 						<span class="challenge-connection-info">
 							{% block connection_info %}
 								{% set conn = challenge.connection_info %}

@@ -46,6 +46,18 @@
 	</div>
 	{% endblock %}
 
+	{% block expiration %}
+	<div class="form-group">
+		<label>
+			Expiration date<br>
+			<small class="form-text text-muted">
+				When challenge stop to bring points.
+			</small>
+		</label>
+		<input type="date" class="form-control chal-value" name="exp-date" value="{{ challenge.expiration_date_str }}" min="2023-01-01" max="2099-12-31">
+	</div>
+	{% endblock %}
+
 	{% block value %}
 	<div class="form-group">
 		<label for="value">

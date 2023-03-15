@@ -51,13 +51,15 @@ class ScoreboardList(Resource):
                         "id": u.id,
                         "oauth_id": u.oauth_id,
                         "name": u.name,
-                        "score": 0,
+                        "rating_score": 0,
+                        "total_score": 0,
                     }
 
             # Get user_standings as a dict so that we can more quickly get member scores
             user_standings = get_user_standings()
             for u in user_standings:
-                membership[u.team_id][u.user_id]["score"] = int(u.score)
+                membership[u.team_id][u.user_id]["rating_score"] = int(u.rating_score)
+                membership[u.team_id][u.user_id]["total_score"] = int(u.total_score)
 
         for i, x in enumerate(standings):
             entry = {
@@ -65,9 +67,10 @@ class ScoreboardList(Resource):
                 "account_id": x.account_id,
                 "account_url": generate_account_url(account_id=x.account_id),
                 "account_type": account_type,
-                "oauth_id": x.oauth_id,
+                #"oauth_id": x.oauth_id,
                 "name": x.name,
-                "score": int(x.score),
+                "rating_score": int(x.rating_score),
+                "total_score": int(x.total_score),
             }
 
             if mode == TEAMS_MODE:

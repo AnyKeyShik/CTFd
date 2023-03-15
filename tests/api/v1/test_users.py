@@ -912,14 +912,14 @@ def test_api_user_get_schema():
             r = client.get("/api/v1/users/3")
             data = r.get_json()["data"]
             assert sorted(data.keys()) == sorted(
-                UserSchema.views["user"] + ["score", "place"]
+                UserSchema.views["user"] + ["rating_score", "total_score", "place"]
             )
 
         with login_as_user(app, name="user1") as client:
             r = client.get("/api/v1/users/3")
             data = r.get_json()["data"]
             assert sorted(data.keys()) == sorted(
-                UserSchema.views["user"] + ["score", "place"]
+                UserSchema.views["user"] + ["rating_score", "total_score", "place"]
             )
     destroy_ctfd(app)
 

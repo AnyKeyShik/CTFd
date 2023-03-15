@@ -8,7 +8,8 @@
 			</th>
 			<th class="sort-col text-center"><b>Place</b></th>
 			<th class="sort-col"><b>{{ get_mode_as_word(capitalize=True) }}</b></th>
-			<th class="sort-col"><b>Score</b></th>
+			<th class="sort-col"><b>Rating score</b></th>
+			<th class="sort-col"><b>Total score</b></th>
 			<th class="sort-col"><b>Visibility</b></th>
 		</tr>
 	</thead>
@@ -37,6 +38,7 @@
 					{% endif %}
 				</a>
 			</td>
+			<td>{{ standing.score }}</td>
 			<td>{{ standing.score }}</td>
 			<td>
 				{% if standing.hidden %}
